@@ -102,8 +102,8 @@ void init(void) {
 	moving_ball.x = 300; // 움직이는 공의 시작 x 좌표
 	moving_ball.y = 70 + moving_ball_radius; // 움직이는 공의 시작 y 좌표
 	
-	velocity.x = -1.2; // 0.0 x 방향 속도
-	velocity.y = 1.2; // 0.05 y 방향 속도
+	velocity.x = -1.0; // 0.0 x 방향 속도
+	velocity.y = 1.0; // 0.05 y 방향 속도
 
 	int tmp_x_position = 10;
 	int tmp_y_position = 890;
