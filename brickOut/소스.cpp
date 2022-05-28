@@ -29,6 +29,11 @@ bool game_over = false; // game over 판단
 bool game_start = false; // game start 판단
 bool ball_start = false; // 사용자 입력을 받으면 공이 움직임
 
+// 현재 화면을 판단할 bool 변수
+bool window_intro = true; // 인트로 화면
+bool window_game_now = false; // 게임 진행 화면
+bool window_game_over = false; // 게임 오버 화면 
+
 // 각 스테이지를 판단할 bool 변수
 bool stage[3] = { false, false, false };
 
@@ -101,7 +106,7 @@ void init(void) {
 	moving_ball_radius = 10.0; // 움직이는 공의 반지름
 	moving_ball.x = 300; // 움직이는 공의 시작 x 좌표
 	moving_ball.y = 70 + moving_ball_radius; // 움직이는 공의 시작 y 좌표
-	
+
 	velocity.x = -1.0; // 0.0 x 방향 속도
 	velocity.y = 1.0; // 0.05 y 방향 속도
 
@@ -127,6 +132,7 @@ void init(void) {
 	item_init();
 
 	collision_count = 1;
+
 }
 
 // 거리 구하는 함수
@@ -152,6 +158,7 @@ void Modeling_Circle(float radius, Point CC) {
 	glEnd();
 }
 
+// bar 그리기
 void Modeling_bar_init() {
 	// 게임 시작 전, 중간에 있을 bar를 그림
 	bar.rectangle[0] = Point(bar_x1, bar_y2);
@@ -167,11 +174,6 @@ void Modeling_Brick() {
 
 	Modeling_bar_init();
 
-	// bar
-	glVertex2d(bar.rectangle[0].x, bar.rectangle[0].y);
-	glVertex2d(bar.rectangle[1].x, bar.rectangle[1].y);
-	glVertex2d(bar.rectangle[2].x, bar.rectangle[2].y);
-	glVertex2d(bar.rectangle[3].x, bar.rectangle[3].y);
 
 	/*
 	brick_array[5][0].rectangle[0].x = 200;
@@ -418,42 +420,41 @@ void Item_Falling() {
 // 이미지 파일 열기
 unsigned char* LoadMeshFromFile(const char* texFile) {
 	int w, h;
-
 	GLuint texture; // 텍스쳐 버퍼
 	glGenTextures(1, &texture);
-
 	FILE* fp = NULL;
 	if (fopen_s(&fp, texFile, "rb")) {
 		printf("ERROR : No %s. \n fail to bind %d\n", texFile, texture);
 		return (unsigned char*)false;
 	}
-
 	int channel;
 	unsigned char* image = stbi_load_from_file(fp, &w, &h, &channel, 4);
 	fclose(fp);
 	return image;
 }
 
-// 이미지 파일 적용
-void intro_image_texture() {
+// 인트로 이미지 파일 적용
+void intro_image_texture(char a[]) {
 	GLuint texID;
-
 	unsigned char* bitmap;
-	bitmap = LoadMeshFromFile((char*)"intro.png");
-	glEnable(GL_TEXTURE_2D);
+	a = (char*)a;
+	bitmap = LoadMeshFromFile(a);
 
+	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap);
-
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	free(bitmap);
 }
 
 void Game_Intro() { // game_start가 false일 때 호출됨
+	char intro[50] = "intro.png";
+	intro_image_texture(intro);
 	// game intro 화면을 그림
 	glBegin(GL_QUADS);
 
@@ -485,14 +486,30 @@ void RenderScene(void) {
 	// Collision_Detection_to_game_over();
 
 	// 게임 시작 상태가 아닐 때
-	if (game_start == false) { // 게임 인트로 화면
+	if (game_start == false && window_intro == true) { // 게임 인트로 화면
 		Game_Intro();
 	}
 
 
 	// 게임 오버 상태가 아니고, 게임 시작 상태일 때
 	else if (game_over != true && game_start != false) { // 게임 진행 중에만 게임 화면을 그림
-		glClearColor(0.0, 0.0, 0.0, 0.0); // black background
+		window_intro = false;
+		char game[50] = "game.png";
+		intro_image_texture(game);
+
+		glBegin(GL_QUADS);
+		glTexCoord2d(0.0, 0.0);
+		glVertex2d(0, height);
+
+		glTexCoord2d(0.0, 1.0);
+		glVertex2d(0, 0);
+
+		glTexCoord2d(1.0, 1.0);
+		glVertex2d(width, 0);
+
+		glTexCoord2d(1.0, 0.0);
+		glVertex2d(width, height);
+		glEnd();
 
 		// 충돌 처리 부분
 		Collision_Detection_Between_Balls(); // 공-공 충돌 함수 
@@ -585,7 +602,6 @@ void main(int argc, char** argv) {
 
 	init();
 	glutReshapeFunc(MyReshape);
-	intro_image_texture();
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(RenderScene);
