@@ -339,10 +339,11 @@ void Collision_Detection_to_bricks() {
 				// top collision
 				if (brick_array[i][j].rectangle[3].y >= moving_ball.y - moving_ball_radius
 					&& velocity.y <= 0
-					&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[3].y), moving_ball) <= moving_ball_radius) {
+					&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[3].y), moving_ball) <= moving_ball_radius + 3) {
 					// velocity.x *= -1;
 					velocity.y *= -1;
 					count++;
+					printf("top\n");
 					printf("%d\n", count);
 					for (int k = 0; k < 4; k++) {
 						brick_array[i][j].rectangle[k] = Point(0, 0);
@@ -350,52 +351,15 @@ void Collision_Detection_to_bricks() {
 
 				}
 
-				// left collision
-				if (brick_array[i][j].rectangle[0].y >= moving_ball.y
-					&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
-					if (brick_array[i][j].rectangle[0].x >= moving_ball.x
-						&& distance(Point(brick_array[i][j].rectangle[0].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
-						velocity.x *= -1;
-						//printf("left\n");
-						count++;
-						printf("%d\n", count);
-						for (int k = 0; k < 4; k++) {
-							brick_array[i][j].rectangle[k] = Point(0, 0);
-						}
-					}
-				}
-
-				// right collision
-				if (brick_array[i][j].rectangle[0].y >= moving_ball.y
-					&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
-					if (brick_array[i][j].rectangle[3].x <= moving_ball.x
-						&& distance(Point(brick_array[i][j].rectangle[3].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
-						velocity.x *= -1;
-						//printf("right\n");
-						count++;
-						printf("%d\n", count);
-						for (int k = 0; k < 4; k++) {
-							brick_array[i][j].rectangle[k] = Point(0, 0);
-						}
-					}
-				}
-
 				// bottom collision
-				if (brick_array[i][j].rectangle[0].x <= moving_ball.x
+				else if (brick_array[i][j].rectangle[0].x <= moving_ball.x
 					&& brick_array[i][j].rectangle[3].x >= moving_ball.x) {
 					if (brick_array[i][j].rectangle[1].y <= moving_ball.y + moving_ball_radius
 						&& velocity.y >= 0
-						&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[1].y), moving_ball) <= moving_ball_radius) {
-						/*
-						printf("벽돌 밑과 공의 중심 사이 거리 : %lf\n", distance(brick_array[i][j].rectangle[1], moving_ball));
-						printf("bottom collision :: [%d][%d] x : (%f ~ %f) -> %f / %f , %f\n",
-							i, j, brick_array[i][j].rectangle[0].x, brick_array[i][j].rectangle[3].x,
-							moving_ball.x + moving_ball_radius, brick_array[i][j].rectangle[1].y, moving_ball.y + moving_ball_radius);
-						*/
-						// velocity.x *= -1;
+						&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[1].y), moving_ball) <= moving_ball_radius + 3) {
 						velocity.y *= -1;
-						//printf("bottom\n");
 						count++;
+						printf("bottom\n");
 						printf("%d\n", count);
 						for (int k = 0; k < 4; k++) {
 							brick_array[i][j].rectangle[k] = Point(0, 0);
@@ -403,42 +367,83 @@ void Collision_Detection_to_bricks() {
 					}
 				}
 
-				// top-left collision
-				/*
-				if (brick_array[i][j].rectangle[0].x == moving_ball.x + moving_ball_radius &&
-					brick_array[i][j].rectangle[0].y == moving_ball.y - moving_ball_radius) {
-					printf("모서리 충돌!\n");
+
+			}
+
+			// left collision
+			if (brick_array[i][j].rectangle[0].y >= moving_ball.y + moving_ball_radius
+				&& brick_array[i][j].rectangle[1].y <= moving_ball.y - moving_ball_radius) {
+				if (brick_array[i][j].rectangle[0].x >= moving_ball.x + moving_ball_radius
+					&& distance(Point(brick_array[i][j].rectangle[0].x, moving_ball.y), moving_ball) <= moving_ball_radius + 3) {
 					velocity.x *= -1;
-					velocity.y *= -1;
+					count++;
+					printf("left\n");
+					printf("%d\n", count);
 					for (int k = 0; k < 4; k++) {
 						brick_array[i][j].rectangle[k] = Point(0, 0);
 					}
 				}
-				*/
-				
-				// top-right collision
-
-				// bottom-left collision
-
-				// bottom-right collision
 			}
+
+			// right collision
+			if (brick_array[i][j].rectangle[0].y >= moving_ball.y + moving_ball_radius
+				&& brick_array[i][j].rectangle[1].y <= moving_ball.y - moving_ball_radius) {
+				if (brick_array[i][j].rectangle[3].x <= moving_ball.x + moving_ball_radius
+					&& distance(Point(brick_array[i][j].rectangle[3].x, moving_ball.y), moving_ball) <= moving_ball_radius + 3) {
+					velocity.x *= -1;
+					count++;
+					printf("right\n");
+					printf("%d\n", count);
+					for (int k = 0; k < 4; k++) {
+						brick_array[i][j].rectangle[k] = Point(0, 0);
+					}
+				}
+			}
+
+			// top-left collision
+			if (((brick_array[i][j].rectangle[0].x) - (moving_ball.x + moving_ball_radius) <= 3) &&
+				((brick_array[i][j].rectangle[0].y) - (moving_ball.y - moving_ball_radius)) <= 3 &&
+				distance(Point(brick_array[i][j].rectangle[0]), Point(moving_ball)) <= moving_ball_radius) {
+				if (velocity.x >= 0 && velocity.y <= 0) {
+					velocity.x *= -1;
+					velocity.y *= -1;
+					printf("좌상단1\n");
+				}
+				else if (velocity.x >= 0 && velocity.y >= 0) {
+					velocity.x *= -1;
+					printf("좌상단2\n");
+				}
+				else if (velocity.x <= 0 && velocity.y <= 0) {
+					velocity.y *= -1;
+					printf("좌상단3\n");
+				}
+				for (int k = 0; k < 4; k++) {
+					brick_array[i][j].rectangle[k] = Point(0, 0);
+				}
+			}
+
+				
+			// top-right collision
+
+			// bottom-left collision
+
+			// bottom-right collision
 		}
 	}
+	
 }
 
 
 // 아이템과 바 충돌 (아이템 습득)
 void item_got_it() {
 	for (int i = 0; i < 8; i++) {
-		if (item.flag[i]) {
-			if (bar.rectangle[0].x <= item.item_text[i].x
-				&& bar.rectangle[3].x >= item.item_text[i].x) {
-				if (bar.rectangle[3].y >= item.item_text[i].y) {
-					item.item_text[i].x = 0;
-					item.item_text[i].y = 0;
-					item_count++;
-					printf("아이템 먹었어! %d\n", item_count);
-				}
+		if (bar.rectangle[0].x <= item.item_text[i].x
+			&& bar.rectangle[3].x >= item.item_text[i].x) {
+			if (bar.rectangle[3].y >= item.item_text[i].y) {
+				item.item_text[i].x = 0;
+				item.item_text[i].y = 0;
+				item_count++;
+				printf("아이템 먹었어! %d\n", item_count);
 			}
 		}
 	}
@@ -454,9 +459,10 @@ void Item_Falling() {
 		if (item.flag[i] == true) {
 			Modeling_Circle(item_radius, item.item_text[i]);
 			item.item_text[i].y -= 5.0;
-			if (item.item_text[i].y <= item_radius) { // 땅에 닿으면
+			if (item.item_text[i].y <= bar.rectangle[1].y) { // 땅에 닿으면
 				item.flag[i] = -1; // 획득 실패 처리
 			}
+			item_got_it();
 		}
 	}
 
@@ -474,6 +480,7 @@ void Item_Falling() {
 			}
 		}
 	}
+
 }
 
 
@@ -568,8 +575,6 @@ void RenderScene(void) {
 		// 아이템 Falling
 		Item_Falling();
 
-		// 아이템 획득
-		item_got_it();
 
 
 		if (ball_start) {
@@ -584,14 +589,27 @@ void RenderScene(void) {
 	// 벽돌 70개를 다 깼음
 	if (count == 70) {
 		window_game_now = false;
-		for (int i = 0; i < 8; i++) {
-			if (item.flag[i] == true) item_clear++;
-		}
 
-		printf("item_clear : %d\n", item_clear);
-
-		if (item_clear != 8) {
+		if (item_count != 8) {
 			char clearNoAllItem[50] = "clear_no_all_item.png";
+			intro_image_texture(clearNoAllItem);
+
+			glBegin(GL_QUADS);
+			glTexCoord2d(0.0, 0.0);
+			glVertex2d(0, height);
+
+			glTexCoord2d(0.0, 1.0);
+			glVertex2d(0, 0);
+
+			glTexCoord2d(1.0, 1.0);
+			glVertex2d(width, 0);
+
+			glTexCoord2d(1.0, 0.0);
+			glVertex2d(width, height);
+			glEnd();
+		}
+		else {
+			char clearNoAllItem[50] = "intro.png";
 			intro_image_texture(clearNoAllItem);
 
 			glBegin(GL_QUADS);
