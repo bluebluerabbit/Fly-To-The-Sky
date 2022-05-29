@@ -22,9 +22,12 @@ int	bottom = 0;
 int	collision_count = 0;
 
 int count = 0;
+int item_count = 0;
 
 float radius1, moving_ball_radius;
 float item_radius;
+
+bool debug_mode = false;
 
 bool collision = false;
 bool game_over = false; // game over 판단
@@ -33,6 +36,7 @@ bool ball_start = false; // 사용자 입력을 받으면 공이 움직임
 
 // 현재 화면을 판단할 bool 변수
 bool window_intro = true; // 인트로 화면
+bool window_game_solution = false;
 bool window_game_now = false; // 게임 진행 화면
 bool window_game_over = false; // 게임 오버 화면 
 
@@ -79,10 +83,7 @@ public:
 ITEM item;
 
 // 바 -> w: 180, h: 20
-int bar_x1 = 210;
-int bar_x2 = 390;
-int bar_y1 = 50;
-int bar_y2 = 70;
+int bar_x1, bar_x2, bar_y1, bar_y2;
 
 void item_init() {
 	srand((unsigned int)time(NULL));
@@ -105,9 +106,14 @@ void init(void) {
 	radius1 = 20.0;
 
 	item_radius = 20.0; // 떨어지는 아이템 공의 반지름
-	moving_ball_radius = 10.0; // 움직이는 공의 반지름
-	moving_ball.x = 300; // 움직이는 공의 시작 x 좌표
-	moving_ball.y = 70 + moving_ball_radius; // 움직이는 공의 시작 y 좌표
+	moving_ball_radius = 15.0; // 움직이는 공의 반지름
+	moving_ball.x = 305; // 움직이는 공의 시작 x 좌표
+	moving_ball.y = 170 + moving_ball_radius; // 움직이는 공의 시작 y 좌표
+
+	bar_x1 = 210;
+	bar_x2 = 390;
+	bar_y1 = 150;
+	bar_y2 = 170;
 
 	velocity.x = -7.0; // 0.0 x 방향 속도
 	velocity.y = 7.0; // 0.05 y 방향 속도
@@ -171,8 +177,8 @@ void Modeling_bar_init() {
 
 // 벽돌, 바 그리기
 void Modeling_Brick() {
-
 	Modeling_bar_init();
+
 	glBegin(GL_QUADS);
 	glColor3f(0.9, 0.7, 0.8);
 	for (int i = 0; i < 4; i++) {
@@ -272,19 +278,10 @@ void Collision_Detection_Between_Balls(void) {
 // 공과 벽 충돌
 void Collision_Detection_to_Walls(void) {
 	if (moving_ball.y <= moving_ball_radius) velocity.y = -velocity.y;
+	if (moving_ball.y >= height - moving_ball_radius - 2) velocity.y *= -1;
 
-	if (moving_ball.y >= bottom + height - moving_ball_radius) { // bottom + height = top
-		velocity.y *= -1;
-		velocity.x = velocity.x;
-	}
-	if (moving_ball.x <= left + moving_ball_radius) {
-		velocity.y = velocity.y;
-		velocity.x *= -1;
-	}
-	if (moving_ball.x >= left + width - moving_ball_radius) { // left + width = right
-		velocity.y = velocity.y;
-		velocity.x *= -1;
-	}
+	if (moving_ball.x <= moving_ball_radius) velocity.x *= -1;
+	if (moving_ball.x >= width - moving_ball_radius) velocity.x *= -1;
 }
 
 // 공과 바 충돌
@@ -296,21 +293,6 @@ void Collision_Detection_to_bar() {
 			&& distance(Point(moving_ball.x, bar.rectangle[3].y), moving_ball) <= moving_ball_radius) {
 			// velocity.x *= -1;
 			velocity.y *= -1;
-		}
-	}
-}
-
-// 아이템과 바 충돌 (아이템 습득)
-void item_got_it() {
-	for (int i = 0; i < 8; i++) {
-		if (item.flag[i]) {
-			if (bar.rectangle[0].x <= item.item_text[i].x
-				&& bar.rectangle[3].x >= item.item_text[i].x) {
-				if (bar.rectangle[3].y >= item.item_text[i].y) {
-					item.item_text[i].x = 0;
-					item.item_text[i].y = 0;
-				}
-			}
 		}
 	}
 }
@@ -356,12 +338,12 @@ void Collision_Detection_to_bricks() {
 				&& brick_array[i][j].rectangle[3].x >= moving_ball.x) {
 				// top collision
 				if (brick_array[i][j].rectangle[3].y >= moving_ball.y - moving_ball_radius
-					&& velocity.y < 0
+					&& velocity.y <= 0
 					&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[3].y), moving_ball) <= moving_ball_radius) {
 					// velocity.x *= -1;
 					velocity.y *= -1;
-					//printf("top\n");
 					count++;
+					printf("%d\n", count);
 					for (int k = 0; k < 4; k++) {
 						brick_array[i][j].rectangle[k] = Point(0, 0);
 					}
@@ -372,11 +354,11 @@ void Collision_Detection_to_bricks() {
 				if (brick_array[i][j].rectangle[0].y >= moving_ball.y
 					&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
 					if (brick_array[i][j].rectangle[0].x >= moving_ball.x
-						&& velocity.x > 0
 						&& distance(Point(brick_array[i][j].rectangle[0].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
 						velocity.x *= -1;
 						//printf("left\n");
 						count++;
+						printf("%d\n", count);
 						for (int k = 0; k < 4; k++) {
 							brick_array[i][j].rectangle[k] = Point(0, 0);
 						}
@@ -387,11 +369,11 @@ void Collision_Detection_to_bricks() {
 				if (brick_array[i][j].rectangle[0].y >= moving_ball.y
 					&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
 					if (brick_array[i][j].rectangle[3].x <= moving_ball.x
-						&& velocity.x < 0
 						&& distance(Point(brick_array[i][j].rectangle[3].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
 						velocity.x *= -1;
 						//printf("right\n");
 						count++;
+						printf("%d\n", count);
 						for (int k = 0; k < 4; k++) {
 							brick_array[i][j].rectangle[k] = Point(0, 0);
 						}
@@ -402,7 +384,7 @@ void Collision_Detection_to_bricks() {
 				if (brick_array[i][j].rectangle[0].x <= moving_ball.x
 					&& brick_array[i][j].rectangle[3].x >= moving_ball.x) {
 					if (brick_array[i][j].rectangle[1].y <= moving_ball.y + moving_ball_radius
-						&& velocity.y > 0
+						&& velocity.y >= 0
 						&& distance(Point(moving_ball.x, brick_array[i][j].rectangle[1].y), moving_ball) <= moving_ball_radius) {
 						/*
 						printf("벽돌 밑과 공의 중심 사이 거리 : %lf\n", distance(brick_array[i][j].rectangle[1], moving_ball));
@@ -414,6 +396,7 @@ void Collision_Detection_to_bricks() {
 						velocity.y *= -1;
 						//printf("bottom\n");
 						count++;
+						printf("%d\n", count);
 						for (int k = 0; k < 4; k++) {
 							brick_array[i][j].rectangle[k] = Point(0, 0);
 						}
@@ -421,6 +404,17 @@ void Collision_Detection_to_bricks() {
 				}
 
 				// top-left collision
+				/*
+				if (brick_array[i][j].rectangle[0].x == moving_ball.x + moving_ball_radius &&
+					brick_array[i][j].rectangle[0].y == moving_ball.y - moving_ball_radius) {
+					printf("모서리 충돌!\n");
+					velocity.x *= -1;
+					velocity.y *= -1;
+					for (int k = 0; k < 4; k++) {
+						brick_array[i][j].rectangle[k] = Point(0, 0);
+					}
+				}
+				*/
 				
 				// top-right collision
 
@@ -433,6 +427,23 @@ void Collision_Detection_to_bricks() {
 }
 
 
+// 아이템과 바 충돌 (아이템 습득)
+void item_got_it() {
+	for (int i = 0; i < 8; i++) {
+		if (item.flag[i]) {
+			if (bar.rectangle[0].x <= item.item_text[i].x
+				&& bar.rectangle[3].x >= item.item_text[i].x) {
+				if (bar.rectangle[3].y >= item.item_text[i].y) {
+					item.item_text[i].x = 0;
+					item.item_text[i].y = 0;
+					item_count++;
+					printf("아이템 먹었어! %d\n", item_count);
+				}
+			}
+		}
+	}
+}
+
 // 아이템 falling -> 아이템 좌표 이동 (천천히 내려감)
 void Item_Falling() {
 	int tmp = 0;
@@ -442,9 +453,9 @@ void Item_Falling() {
 	for (int i = 0; i < 8; i++) {
 		if (item.flag[i] == true) {
 			Modeling_Circle(item_radius, item.item_text[i]);
-			item.item_text[i].y -= 7.0;
-			if (item.item_text[i].y <= item_radius) {
-				item.flag[i] = -1;
+			item.item_text[i].y -= 5.0;
+			if (item.item_text[i].y <= item_radius) { // 땅에 닿으면
+				item.flag[i] = -1; // 획득 실패 처리
 			}
 		}
 	}
@@ -488,21 +499,45 @@ void Game_Intro() { // game_start가 false일 때 호출됨
 
 // 화면 렌더링
 void RenderScene(void) {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	// 게임 시작 상태가 아닐 때
 	if (game_start == false && window_intro == true) { // 게임 인트로 화면
 		Game_Intro();
 	}
 
+	if (game_start == true && window_game_solution == true) {
+		char gamesolution[50] = "gamesolution.png";
+		intro_image_texture(gamesolution);
+
+		glBegin(GL_QUADS);
+		glTexCoord2d(0.0, 0.0);
+		glVertex2d(0, height);
+
+		glTexCoord2d(0.0, 1.0);
+		glVertex2d(0, 0);
+
+		glTexCoord2d(1.0, 1.0);
+		glVertex2d(width, 0);
+
+		glTexCoord2d(1.0, 0.0);
+		glVertex2d(width, height);
+		glEnd();
+	}
+
+	/*
+		// 현재 화면을 판단할 bool 변수
+		bool window_intro = true; // 인트로 화면
+		bool window_game_solution = false;
+		bool window_game_now = false; // 게임 진행 화면
+		bool window_game_over = false; // 게임 오버 화면
+	*/
+
 
 	// 게임 오버 상태가 아니고, 게임 시작 상태일 때
-	else if (game_over != true && game_start != false) { // 게임 진행 중에만 게임 화면을 그림
-		window_game_now = true;
-		window_intro = false;
+	if (game_start == true && game_over != true && window_game_now == true) { // 게임 진행 중에만 게임 화면을 그림
 		char game[50] = "game.png";
 		intro_image_texture(game);
-
 		glBegin(GL_QUADS);
 		glTexCoord2d(0.0, 0.0);
 		glVertex2d(0, height);
@@ -525,6 +560,7 @@ void RenderScene(void) {
 
 		Modeling_Brick(); // 저장된 벽돌 위치 배열을 통해 배열을 그림
 
+
 		// 움직이는 공 그리기
 		glColor3f(1.0, 1.0, 1.0);
 		Modeling_Circle(moving_ball_radius, moving_ball);
@@ -543,8 +579,39 @@ void RenderScene(void) {
 		}
 	}
 
+	int item_clear = 0;
+
+	// 벽돌 70개를 다 깼음
+	if (count == 70) {
+		window_game_now = false;
+		for (int i = 0; i < 8; i++) {
+			if (item.flag[i] == true) item_clear++;
+		}
+
+		printf("item_clear : %d\n", item_clear);
+
+		if (item_clear != 8) {
+			char clearNoAllItem[50] = "clear_no_all_item.png";
+			intro_image_texture(clearNoAllItem);
+
+			glBegin(GL_QUADS);
+			glTexCoord2d(0.0, 0.0);
+			glVertex2d(0, height);
+
+			glTexCoord2d(0.0, 1.0);
+			glVertex2d(0, 0);
+
+			glTexCoord2d(1.0, 1.0);
+			glVertex2d(width, 0);
+
+			glTexCoord2d(1.0, 0.0);
+			glVertex2d(width, height);
+			glEnd();
+		}
+	}
+
 	// bottom 밑으로 공이 내려가면 game over 처리 -> 게임 over 화면으로 전환
-	Collision_Detection_to_game_over();
+	// Collision_Detection_to_game_over();
 
 	glutSwapBuffers();
 	glFlush();
@@ -565,45 +632,72 @@ void SpecialKey(int key, int x, int y) {
 	case GLUT_KEY_RIGHT:
 		if (game_start && ball_start) {
 			if (bar_x2 <= width - 20) {
-				bar_x1 += 15;
-				bar_x2 += 15;
+				bar_x1 += 25;
+				bar_x2 += 25;
 			}
 		}
 		break;
 	case GLUT_KEY_UP:
 		if (game_start && ball_start) {
-			if (bar_y1 >= 40 && bar_y1 <= 160) {
-				bar_y1 += 10;
-				bar_y2 += 10;
-				printf("%d\n", bar_y1);
-				printf("%d\n", bar_y2);
+			if (bar_y1 >= 150 && bar_y1 <= 280) {
+				bar_y1 += 20;
+				bar_y2 += 20;
 			}
 		}
 		break;
 	case GLUT_KEY_DOWN:
 		if (game_start && ball_start) {
-			if (bar_y1 >= 50 && bar_y1 <= 200) {
-				bar_y1 -= 10;
-				bar_y2 -= 10;
-				printf("%d\n", bar_y1);
-				printf("%d\n", bar_y2);
+			if (bar_y1 >= 170 && bar_y1 <= 300) {
+				bar_y1 -= 20;
+				bar_y2 -= 20;
 			}
 		}
 		break;
 
+
+	/*
+		// 현재 화면을 판단할 bool 변수
+		bool window_intro = true; // 인트로 화면
+		bool window_game_solution = false;
+		bool window_game_now = false; // 게임 진행 화면
+		bool window_game_over = false; // 게임 오버 화면 
+	*/
 	case GLUT_KEY_F1:
-		game_start = true;
-		if (game_over) {
-			game_over = false;
-			bar_x1 = 210;
-			bar_x2 = 390;
-			bar_y1 = 50;
-			bar_y2 = 70;
-			init();
+		if (window_intro) { // 인트로 화면일 때 F1을 누르면
+			game_start = true; // 게임 시작 활성화
+			window_game_solution = true; // 게임 방법 화면 출력
+			window_intro = false; // 인트로 화면 비활성화
+		}
+		else if (window_game_solution) { // 게임 방법 화면일 때 F1을 누르면
+			window_game_solution = false; // 게임 방법 화면 비활성화
+			window_game_now = true; // 게임 화면 활성화
+		}
+		else if (game_over) { // 게임 오버 화면일 때 F1을 누르면
+			game_over = false; // 게임 오버 비활성화
+			init(); // 게임 retry
 		}
 		break;
 	case GLUT_KEY_F2:
 		if (game_start) ball_start = true;
+		break;
+	case GLUT_KEY_END:
+		debug_mode = true;
+		velocity.x = 0;
+		velocity.y = 0;
+		break;
+
+	case GLUT_KEY_F3:
+		if (debug_mode) moving_ball.x -= 10;
+		break;
+	case GLUT_KEY_F4:
+		if (debug_mode) moving_ball.y += 10;
+		break;
+	case GLUT_KEY_F5:
+		if (debug_mode) moving_ball.x += 10;
+		break;
+	case GLUT_KEY_F6:
+		if (debug_mode) moving_ball.y -= 10;
+		break;
 	default:
 		break;
 	}
