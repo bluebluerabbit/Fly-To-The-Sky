@@ -7,6 +7,8 @@
 #include "stb_image.h"
 #include <cstdlib>
 
+#include "image_texture_mapping.hpp"
+
 #define STAGE1_BLOCK_ROW 7
 #define ITEM_NUMBER 8
 #define	width 			600
@@ -68,13 +70,13 @@ BRICKS bar;
 // 아이템 위치를 저장하는 class
 class ITEM {
 public:
-	Point item_text[8]; // 'L', 'O', 'V', 'E' 2개씩
+	Point item_text[8];
 	Point upper_brick_num[8];
 	int flag[8] = { false, false, false, false ,
 					false, false, false, false };
 };
 
-ITEM LOVE, HOPE, LUCK;
+ITEM item;
 
 // 바 -> w: 180, h: 20
 int bar_x1 = 210;
@@ -91,11 +93,11 @@ void item_init() {
 		row = rand() % 7;
 		col = rand() % 10;
 
-		LOVE.item_text[i].x = (brick_array[row][col].rectangle[0].x + brick_array[row][col].rectangle[3].x) / 2;
-		LOVE.item_text[i].y = brick_array[row][col].rectangle[1].y - item_radius;
+		item.item_text[i].x = (brick_array[row][col].rectangle[0].x + brick_array[row][col].rectangle[3].x) / 2;
+		item.item_text[i].y = brick_array[row][col].rectangle[1].y - item_radius;
 
-		LOVE.upper_brick_num[i].x = row;
-		LOVE.upper_brick_num[i].y = col;
+		item.upper_brick_num[i].x = row;
+		item.upper_brick_num[i].y = col;
 	}
 }
 
@@ -107,8 +109,8 @@ void init(void) {
 	moving_ball.x = 300; // 움직이는 공의 시작 x 좌표
 	moving_ball.y = 70 + moving_ball_radius; // 움직이는 공의 시작 y 좌표
 
-	velocity.x = -1.0; // 0.0 x 방향 속도
-	velocity.y = 1.0; // 0.05 y 방향 속도
+	velocity.x = -7.0; // 0.0 x 방향 속도
+	velocity.y = 7.0; // 0.05 y 방향 속도
 
 	int tmp_x_position = 10;
 	int tmp_y_position = 890;
@@ -169,11 +171,31 @@ void Modeling_bar_init() {
 
 // 벽돌, 바 그리기
 void Modeling_Brick() {
-	glBegin(GL_QUADS);
-	glColor3f(1.0, 0.0, 0.0);
 
 	Modeling_bar_init();
+	glBegin(GL_QUADS);
+	glColor3f(0.9, 0.7, 0.8);
+	for (int i = 0; i < 4; i++) {
+		glVertex2d(bar.rectangle[0].x, bar.rectangle[0].y);
+		glVertex2d(bar.rectangle[1].x, bar.rectangle[1].y);
+		glVertex2d(bar.rectangle[2].x, bar.rectangle[2].y);
+		glVertex2d(bar.rectangle[3].x, bar.rectangle[3].y);
+	}
+	glEnd();
 
+	glBegin(GL_LINE_LOOP);
+	glColor3f(0.5, 0.5, 0.5);
+	for (int i = 0; i < 4; i++) {
+		glVertex2d(bar.rectangle[0].x, bar.rectangle[0].y);
+		glVertex2d(bar.rectangle[1].x, bar.rectangle[1].y);
+
+		glVertex2d(bar.rectangle[1].x, bar.rectangle[1].y);
+		glVertex2d(bar.rectangle[2].x, bar.rectangle[2].y);
+
+		glVertex2d(bar.rectangle[2].x, bar.rectangle[2].y);
+		glVertex2d(bar.rectangle[3].x, bar.rectangle[3].y);
+	}
+	glEnd();
 
 	/*
 	brick_array[5][0].rectangle[0].x = 200;
@@ -192,28 +214,44 @@ void Modeling_Brick() {
 	// brick
 	for (int i = 0; i < STAGE1_BLOCK_ROW; i++) {
 		for (int j = 0; j < 10; j++) {
-			if ((LOVE.upper_brick_num[0].x == i && LOVE.upper_brick_num[0].y == j)
-				|| (LOVE.upper_brick_num[1].x == i && LOVE.upper_brick_num[1].y == j)
-				|| (LOVE.upper_brick_num[2].x == i && LOVE.upper_brick_num[2].y == j)
-				|| (LOVE.upper_brick_num[3].x == i && LOVE.upper_brick_num[3].y == j)
-				|| (LOVE.upper_brick_num[4].x == i && LOVE.upper_brick_num[4].y == j)
-				|| (LOVE.upper_brick_num[5].x == i && LOVE.upper_brick_num[5].y == j)
-				|| (LOVE.upper_brick_num[6].x == i && LOVE.upper_brick_num[6].y == j)
-				|| (LOVE.upper_brick_num[7].x == i && LOVE.upper_brick_num[7].y == j)) {
-
-				glColor3f(0.0, 1.0, 0.0);
+			glBegin(GL_QUADS);
+			if ((item.upper_brick_num[0].x == i && item.upper_brick_num[0].y == j)
+				|| (item.upper_brick_num[1].x == i && item.upper_brick_num[1].y == j)
+				|| (item.upper_brick_num[2].x == i && item.upper_brick_num[2].y == j)
+				|| (item.upper_brick_num[3].x == i && item.upper_brick_num[3].y == j)
+				|| (item.upper_brick_num[4].x == i && item.upper_brick_num[4].y == j)
+				|| (item.upper_brick_num[5].x == i && item.upper_brick_num[5].y == j)
+				|| (item.upper_brick_num[6].x == i && item.upper_brick_num[6].y == j)
+				|| (item.upper_brick_num[7].x == i && item.upper_brick_num[7].y == j)) {
+				glColor3f(0.8, 0.6, 1.0);
 			}
 			else {
 				glColor3f(1.0, 1.0, 1.0);
 			}
+
 			glVertex2d(brick_array[i][j].rectangle[0].x, brick_array[i][j].rectangle[0].y);
 			glVertex2d(brick_array[i][j].rectangle[1].x, brick_array[i][j].rectangle[1].y);
 			glVertex2d(brick_array[i][j].rectangle[2].x, brick_array[i][j].rectangle[2].y);
 			glVertex2d(brick_array[i][j].rectangle[3].x, brick_array[i][j].rectangle[3].y);
+			glEnd();
+
+			glBegin(GL_LINE_LOOP);
+			glLineWidth(10.0);
+			glColor3f(0.5, 0.5, 0.5);
+			glVertex2d(brick_array[i][j].rectangle[0].x, brick_array[i][j].rectangle[0].y);
+			glVertex2d(brick_array[i][j].rectangle[1].x, brick_array[i][j].rectangle[1].y);
+
+			glVertex2d(brick_array[i][j].rectangle[1].x, brick_array[i][j].rectangle[1].y);
+			glVertex2d(brick_array[i][j].rectangle[2].x, brick_array[i][j].rectangle[2].y);
+
+			glVertex2d(brick_array[i][j].rectangle[2].x, brick_array[i][j].rectangle[2].y);
+			glVertex2d(brick_array[i][j].rectangle[3].x, brick_array[i][j].rectangle[3].y);
+			glEnd();
+
+			
 		}
 	}
 
-	glEnd();
 	glFlush();
 }
 
@@ -262,15 +300,15 @@ void Collision_Detection_to_bar() {
 	}
 }
 
-// 아이템과 바 충돌 (아이템 습득
+// 아이템과 바 충돌 (아이템 습득)
 void item_got_it() {
 	for (int i = 0; i < 8; i++) {
-		if (LOVE.flag[i]) {
-			if (bar.rectangle[0].x <= LOVE.item_text[i].x
-				&& bar.rectangle[3].x >= LOVE.item_text[i].x) {
-				if (bar.rectangle[3].y >= LOVE.item_text[i].y) {
-					LOVE.item_text[i].x = 0;
-					LOVE.item_text[i].y = 0;
+		if (item.flag[i]) {
+			if (bar.rectangle[0].x <= item.item_text[i].x
+				&& bar.rectangle[3].x >= item.item_text[i].x) {
+				if (bar.rectangle[3].y >= item.item_text[i].y) {
+					item.item_text[i].x = 0;
+					item.item_text[i].y = 0;
 				}
 			}
 		}
@@ -284,12 +322,23 @@ void Collision_Detection_to_game_over() {
 		velocity.x = 0;
 		velocity.y = 0;
 
+		window_game_now = false;
+		window_game_over = true;
+		char gameover[50] = "gameover.png";
+		intro_image_texture(gameover);
+
 		// game over 화면을 그림
 		glBegin(GL_QUADS);
-		glColor3f(0.0, 0.0, 0.0);
+		glTexCoord2d(0.0, 0.0);
 		glVertex2d(0, height);
+
+		glTexCoord2d(0.0, 1.0);
 		glVertex2d(0, 0);
+
+		glTexCoord2d(1.0, 1.0);
 		glVertex2d(width, 0);
+
+		glTexCoord2d(1.0, 0.0);
 		glVertex2d(width, height);
 
 		Modeling_bar_init();
@@ -389,68 +438,33 @@ void Item_Falling() {
 	int tmp = 0;
 	int tmp_x = -1, tmp_y = -1;
 
-
 	// 'LOVE' falling
 	for (int i = 0; i < 8; i++) {
-		if (LOVE.flag[i] == true) {
-			Modeling_Circle(item_radius, LOVE.item_text[i]);
-			LOVE.item_text[i].y -= 0.2;
-			if (LOVE.item_text[i].y <= item_radius) {
-				LOVE.flag[i] = -1;
+		if (item.flag[i] == true) {
+			Modeling_Circle(item_radius, item.item_text[i]);
+			item.item_text[i].y -= 7.0;
+			if (item.item_text[i].y <= item_radius) {
+				item.flag[i] = -1;
 			}
 		}
 	}
 
 	for (int j = 0; j < 8; j++) {
 		tmp = 0;
-		tmp_x = LOVE.upper_brick_num[j].x;
-		tmp_y = LOVE.upper_brick_num[j].y;
+		tmp_x = item.upper_brick_num[j].x;
+		tmp_y = item.upper_brick_num[j].y;
 		for (int i = 0; i < 4; i++) {
 			if (brick_array[tmp_x][tmp_y].rectangle[i].x == 0
 				&& brick_array[tmp_x][tmp_y].rectangle[i].y == 0) {
 				tmp++;
-				if (tmp == 4 && LOVE.flag[j] == false) {
-					LOVE.flag[j] = true;
+				if (tmp == 4 && item.flag[j] == false) {
+					item.flag[j] = true;
 				}
 			}
 		}
 	}
 }
 
-// 이미지 파일 열기
-unsigned char* LoadMeshFromFile(const char* texFile) {
-	int w, h;
-	GLuint texture; // 텍스쳐 버퍼
-	glGenTextures(1, &texture);
-	FILE* fp = NULL;
-	if (fopen_s(&fp, texFile, "rb")) {
-		printf("ERROR : No %s. \n fail to bind %d\n", texFile, texture);
-		return (unsigned char*)false;
-	}
-	int channel;
-	unsigned char* image = stbi_load_from_file(fp, &w, &h, &channel, 4);
-	fclose(fp);
-	return image;
-}
-
-// 인트로 이미지 파일 적용
-void intro_image_texture(char a[]) {
-	GLuint texID;
-	unsigned char* bitmap;
-	a = (char*)a;
-	bitmap = LoadMeshFromFile(a);
-
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_2D, texID);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	free(bitmap);
-}
 
 void Game_Intro() { // game_start가 false일 때 호출됨
 	char intro[50] = "intro.png";
@@ -476,15 +490,6 @@ void Game_Intro() { // game_start가 false일 때 호출됨
 void RenderScene(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// 아이템 Falling
-	Item_Falling();
-
-	// 아이템 획득
-	item_got_it();
-
-	// bottom 밑으로 공이 내려가면 game over 처리 -> 게임 over 화면으로 전환
-	// Collision_Detection_to_game_over();
-
 	// 게임 시작 상태가 아닐 때
 	if (game_start == false && window_intro == true) { // 게임 인트로 화면
 		Game_Intro();
@@ -493,6 +498,7 @@ void RenderScene(void) {
 
 	// 게임 오버 상태가 아니고, 게임 시작 상태일 때
 	else if (game_over != true && game_start != false) { // 게임 진행 중에만 게임 화면을 그림
+		window_game_now = true;
 		window_intro = false;
 		char game[50] = "game.png";
 		intro_image_texture(game);
@@ -517,11 +523,18 @@ void RenderScene(void) {
 		Collision_Detection_to_bricks(); // 공-벽돌 충돌 함수
 		Collision_Detection_to_bar(); // 공-바 충돌 함수
 
-		// 움직이는 공 그리기 
+		Modeling_Brick(); // 저장된 벽돌 위치 배열을 통해 배열을 그림
+
+		// 움직이는 공 그리기
 		glColor3f(1.0, 1.0, 1.0);
 		Modeling_Circle(moving_ball_radius, moving_ball);
 
-		Modeling_Brick(); // 저장된 벽돌 위치 배열을 통해 배열을 그림
+		// 아이템 Falling
+		Item_Falling();
+
+		// 아이템 획득
+		item_got_it();
+
 
 		if (ball_start) {
 			// 움직이는 공의 위치 변화
@@ -529,6 +542,9 @@ void RenderScene(void) {
 			moving_ball.y += velocity.y;
 		}
 	}
+
+	// bottom 밑으로 공이 내려가면 game over 처리 -> 게임 over 화면으로 전환
+	Collision_Detection_to_game_over();
 
 	glutSwapBuffers();
 	glFlush();
@@ -581,6 +597,8 @@ void SpecialKey(int key, int x, int y) {
 			game_over = false;
 			bar_x1 = 210;
 			bar_x2 = 390;
+			bar_y1 = 50;
+			bar_y2 = 70;
 			init();
 		}
 		break;
