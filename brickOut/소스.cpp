@@ -359,10 +359,10 @@ void Collision_Detection_to_bricks() {
 			}
 
 			// left collision
-			if (brick_array[i][j].rectangle[0].y >= moving_ball.y + moving_ball_radius
-				&& brick_array[i][j].rectangle[1].y <= moving_ball.y - moving_ball_radius) {
+			if (brick_array[i][j].rectangle[0].y >= moving_ball.y
+				&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
 				if (brick_array[i][j].rectangle[0].x >= moving_ball.x + moving_ball_radius
-					&& distance(Point(brick_array[i][j].rectangle[0].x, moving_ball.y), moving_ball) <= moving_ball_radius + 3) {
+					&& distance(Point(brick_array[i][j].rectangle[0].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
 					velocity.x *= -1;
 					count++;
 					printf("left\n");
@@ -374,10 +374,10 @@ void Collision_Detection_to_bricks() {
 			}
 
 			// right collision
-			if (brick_array[i][j].rectangle[0].y >= moving_ball.y + moving_ball_radius
-				&& brick_array[i][j].rectangle[1].y <= moving_ball.y - moving_ball_radius) {
+			if (brick_array[i][j].rectangle[0].y >= moving_ball.y
+				&& brick_array[i][j].rectangle[1].y <= moving_ball.y) {
 				if (brick_array[i][j].rectangle[3].x <= moving_ball.x + moving_ball_radius
-					&& distance(Point(brick_array[i][j].rectangle[3].x, moving_ball.y), moving_ball) <= moving_ball_radius + 3) {
+					&& distance(Point(brick_array[i][j].rectangle[3].x, moving_ball.y), moving_ball) <= moving_ball_radius) {
 					velocity.x *= -1;
 					count++;
 					printf("right\n");
@@ -389,33 +389,109 @@ void Collision_Detection_to_bricks() {
 			}
 
 			// top-left collision
-			if (((brick_array[i][j].rectangle[0].x) - (moving_ball.x + moving_ball_radius) <= 3) &&
-				((brick_array[i][j].rectangle[0].y) - (moving_ball.y - moving_ball_radius)) <= 3 &&
-				distance(Point(brick_array[i][j].rectangle[0]), Point(moving_ball)) <= moving_ball_radius) {
+			if (distance(Point(brick_array[i][j].rectangle[0]), Point(moving_ball)) <= moving_ball_radius) {
 				if (velocity.x >= 0 && velocity.y <= 0) {
 					velocity.x *= -1;
 					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
 					printf("좌상단1\n");
 				}
 				else if (velocity.x >= 0 && velocity.y >= 0) {
 					velocity.x *= -1;
+					count++;
+					printf("%d\n", count);
 					printf("좌상단2\n");
 				}
 				else if (velocity.x <= 0 && velocity.y <= 0) {
 					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
 					printf("좌상단3\n");
 				}
 				for (int k = 0; k < 4; k++) {
 					brick_array[i][j].rectangle[k] = Point(0, 0);
 				}
 			}
-
 				
 			// top-right collision
+			if (distance(Point(brick_array[i][j].rectangle[3]), Point(moving_ball)) <= moving_ball_radius) {
+				if (velocity.x >= 0 && velocity.y <= 0) {
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우상단1\n");
+				}
+				else if (velocity.x <= 0 && velocity.y >= 0) {
+					velocity.x *= -1;
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우상단2\n");
+				}
+				else if (velocity.x <= 0 && velocity.y <= 0) {
+					velocity.x *= -1;
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우상단3\n");
+				}
+				for (int k = 0; k < 4; k++) {
+					brick_array[i][j].rectangle[k] = Point(0, 0);
+				}
+			}
 
 			// bottom-left collision
+			if (distance(Point(brick_array[i][j].rectangle[1]), Point(moving_ball)) <= moving_ball_radius) {
+				if (velocity.x >= 0 && velocity.y <= 0) {
+					velocity.x *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("좌하단1\n");
+				}
+				else if (velocity.x >= 0 && velocity.y >= 0) {
+					velocity.x *= -1;
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("좌하단2\n");
+				}
+				else if (velocity.x <= 0 && velocity.y >= 0) {
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("좌하단3\n");
+				}
+				for (int k = 0; k < 4; k++) {
+					brick_array[i][j].rectangle[k] = Point(0, 0);
+				}
+			}
 
 			// bottom-right collision
+			if (distance(Point(brick_array[i][j].rectangle[2]), Point(moving_ball)) <= moving_ball_radius) {
+				if (velocity.x >= 0 && velocity.y >= 0) {
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우하단1\n");
+				}
+				else if (velocity.x <= 0 && velocity.y >= 0) {
+					velocity.x *= -1;
+					velocity.y *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우하단2\n");
+				}
+				else if (velocity.x <= 0 && velocity.y <= 0) {
+					velocity.x *= -1;
+					count++;
+					printf("%d\n", count);
+					printf("우하단3\n");
+				}
+				for (int k = 0; k < 4; k++) {
+					brick_array[i][j].rectangle[k] = Point(0, 0);
+				}
+			}
 		}
 	}
 	
@@ -531,14 +607,6 @@ void RenderScene(void) {
 		glEnd();
 	}
 
-	/*
-		// 현재 화면을 판단할 bool 변수
-		bool window_intro = true; // 인트로 화면
-		bool window_game_solution = false;
-		bool window_game_now = false; // 게임 진행 화면
-		bool window_game_over = false; // 게임 오버 화면
-	*/
-
 	// 3. 게임 진행 화면 (window_game_now)
 	// 게임 오버 상태가 아니고, 게임 시작 상태일 때
 	if (game_start == true && game_over != true && window_game_now == true) { // 게임 진행 중에만 게임 화면을 그림
@@ -628,7 +696,7 @@ void RenderScene(void) {
 
 	// 5. 게임 오버 화면 (window_game_over)
 	// bottom 밑으로 공이 내려가면 game over 처리 -> 게임 over 화면으로 전환
-	Collision_Detection_to_game_over();
+	// Collision_Detection_to_game_over();
 
 	glutSwapBuffers();
 	glFlush();
@@ -709,16 +777,16 @@ void SpecialKey(int key, int x, int y) {
 		velocity.y = 0;
 		break;
 	case GLUT_KEY_F3:
-		if (debug_mode) moving_ball.x -= 10;
+		if (debug_mode) moving_ball.x -= 3;
 		break;
 	case GLUT_KEY_F4:
-		if (debug_mode) moving_ball.y += 10;
+		if (debug_mode) moving_ball.y += 3;
 		break;
 	case GLUT_KEY_F5:
-		if (debug_mode) moving_ball.x += 10;
+		if (debug_mode) moving_ball.x += 3;
 		break;
 	case GLUT_KEY_F6:
-		if (debug_mode) moving_ball.y -= 10;
+		if (debug_mode) moving_ball.y -= 3;
 		break;
 	default:
 		break;
