@@ -123,8 +123,8 @@ void init(void) {
 	bar_y1 = 150; // 아래쪽 y좌표
 	bar_y2 = 170; // 위쪽 y좌표
 
-	velocity.x = -5.0; // 0.0 x 방향 속도
-	velocity.y = 5.0; // 0.05 y 방향 속도
+	velocity.x = -7.0; // 0.0 x 방향 속도
+	velocity.y = 7.0; // 0.05 y 방향 속도
 
 	int tmp_x_position = 10;
 	int tmp_y_position = 890;
@@ -569,7 +569,7 @@ void Item_Falling() {
 			Modeling_Circle(item_radius, item.item_text[i]);
 			// item falling 속도 조절
 			item.item_text[i].y -= 3.0;
-			if (item.item_text[i].y <= bar.rectangle[1].y) { // 땅에 닿으면
+			if (item.item_text[i].y <= bar.rectangle[1].y) { // bar의 아랫부분 y 좌표보다 내려갈 경우
 				item.flag[i] = -1; // 획득 실패 처리
 			}
 			item_got_it();
@@ -619,9 +619,84 @@ void Game_Intro() {
 	glEnd();
 }
 
+void Game_Solution() {
+	char gamesolution[50] = "gamesolution.png";
+	intro_image_texture(gamesolution);
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	glVertex2d(0, height);
+
+	glTexCoord2d(0.0, 1.0);
+	glVertex2d(0, 0);
+
+	glTexCoord2d(1.0, 1.0);
+	glVertex2d(width, 0);
+
+	glTexCoord2d(1.0, 0.0);
+	glVertex2d(width, height);
+	glEnd();
+}
+
+void Game_Now() {
+	char game[50] = "game.png";
+	intro_image_texture(game);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	glVertex2d(0, height);
+
+	glTexCoord2d(0.0, 1.0);
+	glVertex2d(0, 0);
+
+	glTexCoord2d(1.0, 1.0);
+	glVertex2d(width, 0);
+
+	glTexCoord2d(1.0, 0.0);
+	glVertex2d(width, height);
+	glEnd();
+}
+
+void Game_Clear1() {
+	char clearNoAllItem[50] = "clear_no_all_item.png";
+	intro_image_texture(clearNoAllItem);
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	glVertex2d(0, height);
+
+	glTexCoord2d(0.0, 1.0);
+	glVertex2d(0, 0);
+
+	glTexCoord2d(1.0, 1.0);
+	glVertex2d(width, 0);
+
+	glTexCoord2d(1.0, 0.0);
+	glVertex2d(width, height);
+	glEnd();
+}
+
+void Game_Clear2() {
+	char clearAllItem[50] = "clear_all_item.png";
+	intro_image_texture(clearAllItem);
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	glVertex2d(0, height);
+
+	glTexCoord2d(0.0, 1.0);
+	glVertex2d(0, 0);
+
+	glTexCoord2d(1.0, 1.0);
+	glVertex2d(width, 0);
+
+	glTexCoord2d(1.0, 0.0);
+	glVertex2d(width, height);
+	glEnd();
+}
+
+
 // 화면 렌더링
 void RenderScene(void) {
-	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	// 1. 게임 인트로 (window_intro)
 	if (game_start == false && window_intro == true) { // 게임 인트로 화면
@@ -630,43 +705,14 @@ void RenderScene(void) {
 	
 	// 2. 게임 방법 (window_game_solution)
 	if (game_start == true && window_game_solution == true) {
-		char gamesolution[50] = "gamesolution.png";
-		intro_image_texture(gamesolution);
-
-		glBegin(GL_QUADS);
-		glTexCoord2d(0.0, 0.0);
-		glVertex2d(0, height);
-
-		glTexCoord2d(0.0, 1.0);
-		glVertex2d(0, 0);
-
-		glTexCoord2d(1.0, 1.0);
-		glVertex2d(width, 0);
-
-		glTexCoord2d(1.0, 0.0);
-		glVertex2d(width, height);
-		glEnd();
+		Game_Solution();
 	}
 
 	// 3. 게임 진행 화면 (window_game_now)
 	// 게임 오버 상태가 아니고, 게임 시작 상태일 때
 	if (game_start == true && game_over != true && window_game_now == true) { // 게임 진행 중에만 게임 화면을 그림
-		char game[50] = "game.png";
-		intro_image_texture(game);
-		glBegin(GL_QUADS);
-		glTexCoord2d(0.0, 0.0);
-		glVertex2d(0, height);
+		Game_Now();
 
-		glTexCoord2d(0.0, 1.0);
-		glVertex2d(0, 0);
-
-		glTexCoord2d(1.0, 1.0);
-		glVertex2d(width, 0);
-
-		glTexCoord2d(1.0, 0.0);
-		glVertex2d(width, height);
-		glEnd();
-		
 		// 충돌 함수들 호출
 		Collision_Detection_to_Walls(); // 공-벽 충돌 함수
 		Collision_Detection_to_bricks(); // 공-벽돌 충돌 함수
@@ -697,47 +743,17 @@ void RenderScene(void) {
 
 		// 4-1. Clear : 아이템 8개를 다 모으지 못한 경우
 		if (item_count != 8) {
-			char clearNoAllItem[50] = "clear_no_all_item.png";
-			intro_image_texture(clearNoAllItem);
-
-			glBegin(GL_QUADS);
-			glTexCoord2d(0.0, 0.0);
-			glVertex2d(0, height);
-
-			glTexCoord2d(0.0, 1.0);
-			glVertex2d(0, 0);
-
-			glTexCoord2d(1.0, 1.0);
-			glVertex2d(width, 0);
-
-			glTexCoord2d(1.0, 0.0);
-			glVertex2d(width, height);
-			glEnd();
+			Game_Clear1();
 		}
 		// 4-2. Clear : 아이템 8개를 모두 모은 경우
 		else {
-			char clearAllItem[50] = "clear_all_item.png";
-			intro_image_texture(clearAllItem);
-
-			glBegin(GL_QUADS);
-			glTexCoord2d(0.0, 0.0);
-			glVertex2d(0, height);
-
-			glTexCoord2d(0.0, 1.0);
-			glVertex2d(0, 0);
-
-			glTexCoord2d(1.0, 1.0);
-			glVertex2d(width, 0);
-
-			glTexCoord2d(1.0, 0.0);
-			glVertex2d(width, height);
-			glEnd();
+			Game_Clear2();
 		}
 	}
 
 	// 5. 게임 오버 화면 (window_game_over)
 	// bottom 밑으로 공이 내려가면 game over 처리 -> 게임 over 화면으로 전환
-	// Collision_Detection_to_game_over();
+	Collision_Detection_to_game_over();
 
 	glutSwapBuffers();
 	glFlush();
@@ -795,7 +811,7 @@ void SpecialKey(int key, int x, int y) {
 		}
 		else if (window_game_solution) { // 게임 방법 화면일 때 F1을 누르면
 			window_game_solution = false; // 게임 방법 화면 비활성화
-			window_game_now = true; // 게임 화면 활성화
+			window_game_now = true; // 게임 화면 
 		}
 		else if (game_over) { // 게임 오버 화면일 때 F1을 누르면
 			game_over = false; // 게임 오버 비활성화
