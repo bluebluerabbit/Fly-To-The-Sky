@@ -123,8 +123,8 @@ void init(void) {
 	bar_y1 = 150; // 아래쪽 y좌표
 	bar_y2 = 170; // 위쪽 y좌표
 
-	velocity.x = -7.0; // 0.0 x 방향 속도
-	velocity.y = 7.0; // 0.05 y 방향 속도
+	velocity.x = -5.0; // 0.0 x 방향 속도
+	velocity.y = 5.0; // 0.05 y 방향 속도
 
 	int tmp_x_position = 10;
 	int tmp_y_position = 890;
@@ -551,7 +551,6 @@ void item_got_it() {
 				item.item_text[i].y = 0;
 				// 획득한 item의 개수 count
 				item_count++;
-				printf("아이템 먹었어! %d\n", item_count);
 			}
 		}
 	}
